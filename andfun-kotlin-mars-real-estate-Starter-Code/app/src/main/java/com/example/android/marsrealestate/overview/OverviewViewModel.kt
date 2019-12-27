@@ -21,6 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.android.marsrealestate.network.MarsApi
+import com.example.android.marsrealestate.network.MarsApiFilter
 import com.example.android.marsrealestate.network.MarsProperty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,20 +57,21 @@ class OverviewViewModel : ViewModel() {
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
      */
     init {
-        getMarsRealEstateProperties()
+        // To show all the property by default when the app first loads
+        getMarsRealEstateProperties(MarsApiFilter.SHOW_ALL)
     }
 
     /**
      * Sets the value of the status LiveData to the Mars API status.
      */
-    private fun getMarsRealEstateProperties() {
+    private fun getMarsRealEstateProperties(filter: MarsApiFilter) {
 
         // In order to use deferred, have to be inside a coroutine scope.
         coroutineScope.launch {
 
             // Loading ---
             //  Starts the network request on a thread
-            var getPropertiesDefered = MarsApi.retrofitService.getProperties()
+            var getPropertiesDefered = MarsApi.retrofitService.getProperties(filter.value)
 
             try{
                 _status.value = MarsApiStatus.LOADING
@@ -101,5 +103,9 @@ class OverviewViewModel : ViewModel() {
     // To clear the live data to avoid it being triggered again
     fun displayPropertyDetailsComplete(){
         _navigateToSelectedProperty.value = null
+    }
+
+    fun updateFilter(filter: MarsApiFilter){
+        getMarsRealEstateProperties(filter)
     }
 }
