@@ -20,11 +20,20 @@ package com.example.android.marsrealestate
 import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.databinding.BindingAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.android.marsrealestate.network.MarsProperty
+import com.example.android.marsrealestate.overview.PhotoGridAdapter
+
+@BindingAdapter("listData")
+fun bindRecyclerView(recyclerView: RecyclerView, data: List<MarsProperty>?){
+    val adapter = recyclerView.adapter as PhotoGridAdapter
+    adapter.submitList(data)
+}
 
 // Tells data binding that we want this binding adapter executed when an XML item has the imageUrl attribute
 @BindingAdapter("imageUrl")
-fun bindImage(imgView: ImageView, imgUrl: String){
+fun bindImage(imgView: ImageView, imgUrl: String?){
     imgUrl?.let {
         val imgUri = it.toUri().buildUpon().scheme("https").build()
         Glide.with(imgView.context)
