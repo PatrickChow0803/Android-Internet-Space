@@ -27,16 +27,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
+enum class MarsApiStatus{ LOADING, ERROR, DONE}
+
 /**
  * The [ViewModel] that is attached to the [OverviewFragment].
  */
 class OverviewViewModel : ViewModel() {
 
     // The internal MutableLiveData String that stores the status of the most recent request
-    private val _status = MutableLiveData<String>()
+    private val _status = MutableLiveData<MarsApiStatus>()
 
     // The external immutable LiveData for the request status String
-    val status: LiveData<String>
+    val status: LiveData<MarsApiStatus>
         get() = _status
 
     private val _properties = MutableLiveData<List<MarsProperty>>()
@@ -61,20 +63,24 @@ class OverviewViewModel : ViewModel() {
         // In order to use deferred, have to be inside a coroutine scope.
         coroutineScope.launch {
 
+            // Loading ---
             //  Starts the network request on a thread
             var getPropertiesDefered = MarsApi.retrofitService.getProperties()
 
             try{
+                _status.value = MarsApiStatus.LOADING
                 // Calling await returns the result from the network call when the value is ready
                 val listResult = getPropertiesDefered.await()
-
+                _status.value = MarsApiStatus.DONE
+                // Success ---
                 if(listResult.isNotEmpty()){
                     _properties.value = listResult
                 }
-
-                _status.value = "Success: ${listResult.size} Mars properties retrieved"
             } catch (t: Throwable) {
-                _status.value = "Failure " + t.message
+                // Fail ---
+                _status.value = MarsApiStatus.ERROR
+                // If error, set the properties list to an empty list to clear the recycler view
+                _properties.value = ArrayList()
             }
         }
     }
