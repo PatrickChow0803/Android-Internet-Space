@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.example.android.marsrealestate.databinding.FragmentDetailBinding
+import com.example.android.marsrealestate.network.MarsProperty
 
 /**
  * This [Fragment] will show the detailed information about a selected piece of Mars real estate.
@@ -35,6 +36,19 @@ class DetailFragment : Fragment() {
         val application = requireNotNull(activity).application
         val binding = FragmentDetailBinding.inflate(inflater)
         binding.setLifecycleOwner(this)
+
+        val marsProperty: MarsProperty = DetailFragmentArgs.fromBundle(arguments!!).selectedProperty
+
+        /*
+
+           SINCE DETAILVIEWMODEL TAKES A MARS PROPERTY, WE NEED TO USE A CUSTOM DETAIL VIEW MODEL FACTORY
+           TO GET AN INSTANCE OF IT
+
+         */
+        val viewModelFactory = DetailViewModelFactory(marsProperty, application)
+
+        binding.viewModel = ViewModelProviders.of(this, viewModelFactory).get(DetailViewModel::class.java)
+
         return binding.root
     }
 }
